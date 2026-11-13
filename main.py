@@ -1,92 +1,112 @@
+import random
+from words import random_word
 
-print("Привет! Добро пожаловать в игру «Виселица».")
-print("Цель: угадать загаданное слово по буквам, пока не закончились попытки.")
-print("Команды: guess <буква>, status, exit\n")
 
-# Загаданное слово и основные переменные
-word = "lerko"
-guessed_bykva = ""
-errors = 0
-max_errors = 6
+def show_help():
+    """Показывает правила игры."""
+    print("\nПравила игры:")
+    print("Нужно угадать загаданное слово по одной букве.")
+    print("За каждую неправильную букву отнимается одна попытка.")
+    print("Иногда игра может дать случайную подсказку или дополнительную попытку.\n")
 
-# Главный игровой цикл
-while True: 
-    # 1. Сборка текущего отображения слова (если буква угадана — показываем её, иначе '_')
-    display_word = ""
-    for bykva in word:
-        if bykva in guessed_bykva:
-            display_word = display_word + bykva + " "
+
+def show_word(word, guessed):
+    """Показывает открытые буквы, а неизвестные заменяет подчёркиваниями."""
+    displayed_word = ""
+
+    for letter in word:
+        if letter.lower() in guessed:
+            displayed_word += letter + " "
         else:
-            display_word = display_word + "_ "
+            displayed_word += "_ "
 
-    print("\nСлово:", display_word)
-    print("Ошибки:", errors, "из", max_errors)
+    print("Слово:", displayed_word)
 
-    # 2. Получение и нормализация ввода от пользователя
-    command = input("Введите команду: ").strip().lower()
 
-    # 3. Обработка команды exit (выход)
-    if command == "exit":
-        print("Выход из игры. До свидания!")
-        break
+def check_letter(word, letter):
+    """Проверяет, есть ли буква в загаданном слове."""
+    return letter.lower() in word.lower()
 
-    # 4. Обработка команды status (текущее состояние)
-    elif command == "status":
-        print()
-        print("--- Статус игры ---")
-        print("Слово:", display_word)
-        print("Количество ошибок:", errors)
-        print("Уже введенные буквы:", guessed_bykva)
-        print("-------------------")
-        continue
 
-    # 5. Обработка команды guess <буква>
-    elif command.startswith("guess "):
-        # Получаем всё, что идет после слова "guess "
-        bukva1 = command[6:].strip()
+def play_game():
+    """Запускает один раунд игры."""
+    print("Игра «Виселица»")
 
-        # Проверяем, что пользователь ввел ровно одну букву
-        if len(bukva1) != 1:
-            print("Ошибка: нужно ввести ровно одну букву после команды guess!")
+    category = input("Выберите категорию (животные, еда, страны): ").strip().lower()
+    word = random_word(category)
+
+    if word == "":
+        print("Такой категории нет. Будет выбрана категория «животные».")
+        word = random_word("животные")
+
+    guessed = ""
+    attempts = 6
+    extra_attempt_used = False
+
+    print(f"В слове {len(word)} букв.")
+    show_word(word, guessed)
+
+    while attempts > 0:
+        # Случайное событие: дополнительная попытка (не более одного раза).
+        if not extra_attempt_used and random.random() < 0.15:
+            attempts += 1
+            extra_attempt_used = True
+            print("Случайное событие: вы получили дополнительную попытку!")
+
+        # Случайное событие: подсказка — открывается одна буква слова.
+        if random.random() < 0.10:
+            hint_index = random.choice(range(len(word)))
+            hint_letter = word[hint_index].lower()
+
+            if hint_letter not in guessed:
+                guessed += hint_letter
+                print(f"Подсказка: открыта буква «{hint_letter}».")
+
+        letter = input("\nВведите одну букву: ").strip().lower()
+
+        if len(letter) != 1 or not letter.isalpha():
+            print("Введите, пожалуйста, одну букву.")
             continue
 
-        # Проверяем, не вводил ли игрок эту букву раньше
-        if bukva1  in guessed_bykva:
-            print("Вы уже угадывали эту букву раньше. Попробуйте другую.")
+        if letter in guessed:
+            print("Вы уже называли эту букву.")
             continue
 
-        # Добавляем букву в строку угаданных букв
-        guessed_bykva += bukva1 
+        guessed += letter
 
-        # Проверяем, есть ли такая буква в загаданном слове
-        if bukva1  in word:
-            print("Отлично! Такая буква есть в слове.")
+        if check_letter(word, letter):
+            print("Верно! Такая буква есть.")
         else:
-            print("Такой буквы нет в слове! Ошибка увеличивается.")
-            errors = errors + 1
+            attempts -= 1
+            print("Такой буквы нет.")
 
-        # Проверка на проигрыш (если ошибок стало 6 или больше)
-        if errors >= max_errors:
-            print("\nК сожалению, вы проиграли! Превышен лимит ошибок.")
-            print("Загаданное слово было:", word)
-            break
+        show_word(word, guessed)
+        print(f"Осталось попыток: {attempts}")
 
-        # Проверка на победу (если в отображении больше нет подчеркиваний '_')
-        # Проверяем каждую букву слова: все ли они есть в guessed_letters
-        won = True
-        for l in word:
-            if l not in guessed_bykva:
-                won = False
-                break
+        # Проверяем, открыты ли все буквы слова.
+        all_letters_guessed = True
+        for symbol in word:
+            if symbol.lower() not in guessed:
+                all_letters_guessed = False
 
-        if won:
-            print("\nПоздравляем! Вы полностью угадали слово:", word)
-            break
+        if all_letters_guessed:
+            print(f"Поздравляем! Вы угадали слово: {word}")
+            return
 
-    # Если команда не распознана
-    else:
-        print("Неизвестная команда. Попробуйте еще раз или используйте 'status'.")
-        continue
+    print(f"Попытки закончились. Загаданное слово: {word}")
+
+
+def main():
+    # Фиксированное начальное значение для воспроизводимости случайных событий.
+    random.seed(42)
+
+    show_help()
+    play_game()
+
+
+if __name__ == "__main__":
+    main()
+
 
 
 
