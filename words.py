@@ -1,51 +1,43 @@
 import random
 
+# Списки слов по категориям.
+WORDS_BY_CATEGORY = {
+    "животные": ["тигр", "слон", "кошка", "заяц", "волк"],
+    "еда": ["пицца", "каша", "банан", "сыр", "яблоко"],
+    "страны": ["польша", "италия", "канада", "япония", "бразилия"],
+}
+
+# Словарь: слово -> количество попыток.
+difficulty = {
+    "тигр": 6, "слон": 6, "кошка": 6, "заяц": 6, "волк": 6,
+    "пицца": 6, "каша": 6, "банан": 6, "сыр": 6, "яблоко": 6,
+    "польша": 6, "италия": 6, "канада": 6, "япония": 6, "бразилия": 6,
+}
+
 
 def random_word(category="животные"):
-
-    if category == "животные":
-        word_count = 5
-    elif category == "еда":
-        word_count = 5
-    elif category == "страны":
-        word_count = 5
-    else:
+    """Возвращает случайное слово из выбранной категории."""
+    if category not in WORDS_BY_CATEGORY:
         return ""
+    return random.choice(WORDS_BY_CATEGORY[category])
 
-    word_index = random.choice(range(word_count))
 
-    if category == "животные":
-        if word_index == 0:
-            return "тигр"
-        elif word_index == 1:
-            return "слон"
-        elif word_index == 2:
-            return "кошка"
-        elif word_index == 3:
-            return "заяц"
-        else:
-            return "волк"
+def long_words(words):
+    """Возвращает слова длиной больше пяти букв."""
+    return [word for word in words if len(word) > 5]
 
-    elif category == "еда":
-        if word_index == 0:
-            return "пицца"
-        elif word_index == 1:
-            return "каша"
-        elif word_index == 2:
-            return "банан"
-        elif word_index == 3:
-            return "сыр"
-        else:
-            return "яблоко"
 
-    elif category == "страны":
-        if word_index == 0:
-            return "польша"
-        elif word_index == 1:
-            return "италия"
-        elif word_index == 2:
-            return "канада"
-        elif word_index == 3:
-            return "япония"
-        else:
-            return "бразилия"
+def add_guessed(guessed, ch):
+    """Добавляет букву в множество угаданных букв."""
+    guessed.add(ch.lower())
+    return guessed
+
+
+def describe(word):
+    """Возвращает описание слова, его длину и сложность."""
+    return f"Слово: {word}, букв: {len(word)}, сложность: {difficulty.get(word.lower(), 6)}"
+
+
+def words_upper(words):
+    """Возвращает новый список слов в верхнем регистре."""
+    return [word.upper() for word in words]

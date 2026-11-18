@@ -1,5 +1,5 @@
 import random
-from words import random_word
+from words import random_word, add_guessed, describe
 
 
 def show_help():
@@ -7,19 +7,17 @@ def show_help():
     print("\nПравила игры:")
     print("Нужно угадать загаданное слово по одной букве.")
     print("За каждую неправильную букву отнимается одна попытка.")
-    print("Иногда игра может дать случайную подсказку или дополнительную попытку.\n")
+    print("Иногда игра может дать подсказку или дополнительную попытку.\n")
 
 
 def show_word(word, guessed):
-    """Показывает открытые буквы, а неизвестные заменяет подчёркиваниями."""
+    """Показывает открытые буквы, остальные заменяет подчёркиваниями."""
     displayed_word = ""
-
     for letter in word:
         if letter.lower() in guessed:
             displayed_word += letter + " "
         else:
             displayed_word += "_ "
-
     print("Слово:", displayed_word)
 
 
@@ -31,7 +29,6 @@ def check_letter(word, letter):
 def play_game():
     """Запускает один раунд игры."""
     print("Игра «Виселица»")
-
     category = input("Выберите категорию (животные, еда, страны): ").strip().lower()
     word = random_word(category)
 
@@ -39,31 +36,28 @@ def play_game():
         print("Такой категории нет. Будет выбрана категория «животные».")
         word = random_word("животные")
 
-    guessed = ""
+    guessed = set()
     attempts = 6
     extra_attempt_used = False
 
-    print(f"В слове {len(word)} букв.")
+    print(describe(word))
     show_word(word, guessed)
 
     while attempts > 0:
-        # Случайное событие: дополнительная попытка (не более одного раза).
+        # Дополнительная попытка может выпасть только один раз.
         if not extra_attempt_used and random.random() < 0.15:
             attempts += 1
             extra_attempt_used = True
             print("Случайное событие: вы получили дополнительную попытку!")
 
-        # Случайное событие: подсказка — открывается одна буква слова.
+        # Подсказка открывает случайную букву.
         if random.random() < 0.10:
-            hint_index = random.choice(range(len(word)))
-            hint_letter = word[hint_index].lower()
-
+            hint_letter = random.choice(word).lower()
             if hint_letter not in guessed:
-                guessed += hint_letter
+                add_guessed(guessed, hint_letter)
                 print(f"Подсказка: открыта буква «{hint_letter}».")
 
         letter = input("\nВведите одну букву: ").strip().lower()
-
         if len(letter) != 1 or not letter.isalpha():
             print("Введите, пожалуйста, одну букву.")
             continue
@@ -72,8 +66,7 @@ def play_game():
             print("Вы уже называли эту букву.")
             continue
 
-        guessed += letter
-
+        add_guessed(guessed, letter)
         if check_letter(word, letter):
             print("Верно! Такая буква есть.")
         else:
@@ -83,7 +76,6 @@ def play_game():
         show_word(word, guessed)
         print(f"Осталось попыток: {attempts}")
 
-        # Проверяем, открыты ли все буквы слова.
         all_letters_guessed = True
         for symbol in word:
             if symbol.lower() not in guessed:
@@ -97,17 +89,10 @@ def play_game():
 
 
 def main():
-    # Фиксированное начальное значение для воспроизводимости случайных событий.
     random.seed(42)
-
     show_help()
     play_game()
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
